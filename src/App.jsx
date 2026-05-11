@@ -1,122 +1,87 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+import YearSelector from "./components/YearSelector.jsx";
+import MovieDisplay from "./components/MovieDisplay.jsx";
+import RatingButton from "./components/RatingButton.jsx";
+import Statistics from "./components/Statistics.jsx";
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+const moviesByYear = {
+  2024: [
+    { id: 1, title: "Dune: Part Two" },
+    { id: 2, title: "Challengers" },
+    { id: 3, title: "Civil War" },
+  ],
+  2023: [
+    { id: 4, title: "Oppenheimer" },
+    { id: 5, title: "Past Lives" },
+    { id: 6, title: "Godzilla Minus One" },
+  ],
+  2022: [
+    { id: 7, title: "Everything Everywhere All at Once" },
+    { id: 8, title: "Top Gun: Maverick" },
+    { id: 9, title: "The Batman" },
+  ],
+};
 
-      <div className="ticks"></div>
+const ratingOptions = [
+  { label: "Bad", value: -3 },
+  { label: "Boring", value: -1 },
+  { label: "Average", value: 0 },
+  { label: "Fun", value: 1 },
+  { label: "Good", value: 3 },
+];
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function getRandomMovieFromYear(year) {
+  const movies = moviesByYear[year];
+  const randomIndex = Math.floor(Math.random() * movies.length);
+  return movies[randomIndex];
 }
 
-export default App
+export default function App() {
+  const [year, setYear] = useState("2024");
+  const [selectedMovie, setSelectedMovie] = useState(getRandomMovieFromYear("2024"));
+  const [ratings, setRatings] = useState([]);
+
+  function handleYearChange(event) {
+    const newYear = event.target.value;
+
+    setYear(newYear);
+    setSelectedMovie(getRandomMovieFromYear(newYear));
+  }
+
+  function handleRating(label, value) {
+    const newRating = {
+      movieId: selectedMovie.id,
+      movieTitle: selectedMovie.title,
+      year: year,
+      label: label,
+      value: value,
+    };
+
+    setRatings(ratings.concat(newRating));
+    setSelectedMovie(getRandomMovieFromYear(year));
+  }
+
+  return (
+    <div>
+      <h1>Movie Rating Tracker</h1>
+
+      <YearSelector year={year} onYearChange={handleYearChange} />
+
+      <MovieDisplay movie={selectedMovie} />
+
+      <div>
+        {ratingOptions.map((rating) => (
+          <RatingButton
+            key={rating.label}
+            label={rating.label}
+            value={rating.value}
+            onRate={handleRating}
+          />
+        ))}
+      </div>
+
+      <Statistics ratings={ratings} />
+    </div>
+  );
+}
