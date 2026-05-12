@@ -8,11 +8,14 @@ export default function MovieDisplay({ movie }) {
     );
   }
 
-  const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : null;
+  const posterUrl = movie.poster_path
+    ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+    : null;
 
   return (
     <div>
       <h2>Rate this movie:</h2>
+
       {posterUrl && (
         <img
           src={posterUrl}
@@ -20,6 +23,7 @@ export default function MovieDisplay({ movie }) {
           width="200"
         />
       )}
+
       <p>{movie.title}</p>
     </div>
   );

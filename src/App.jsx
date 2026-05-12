@@ -2,16 +2,10 @@ import { useEffect, useState } from "react";
 
 import YearSelector from "./components/YearSelector.jsx";
 import MovieDisplay from "./components/MovieDisplay.jsx";
-import RatingButton from "./components/RatingButton.jsx";
+import RatingControls from "./components/RatingControls.jsx";
 import Statistics from "./components/Statistics.jsx";
 
-const ratingOptions = [
-  { label: "Bad", value: -3 },
-  { label: "Boring", value: -1 },
-  { label: "Average", value: 0 },
-  { label: "Fun", value: 1 },
-  { label: "Good", value: 3 },
-];
+import { fetchTopMoviesByYear } from "./tmdb.js";
 
 function getRandomMovie(movies) {
   const randomIndex = Math.floor(Math.random() * movies.length);
@@ -19,7 +13,7 @@ function getRandomMovie(movies) {
 }
 
 export default function App() {
-  const [year, setYear] = useState("2024");
+  const [year, setYear] = useState("2026");
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [ratings, setRatings] = useState([]);
@@ -27,43 +21,13 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    async function fetchMovies() {
+    async function loadMovies() {
       setLoading(true);
       setErrorMessage("");
       setSelectedMovie(null);
 
       try {
-        const token = import.meta.env.VITE_TMDB_TOKEN;
-
-        const allMovies = [];
-
-        for (let page = 1; page <= 5; page++) {
-          const url =
-            `https://api.themoviedb.org/3/discover/movie` +
-            `?include_adult=false` +
-            `&include_video=false` +
-            `&language=en-US` +
-            `&page=${page}` +
-            `&primary_release_year=${year}` +
-            `&sort_by=vote_average.desc` +
-            `&vote_count.gte=100`;
-
-          const response = await fetch(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              accept: "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch movies from TMDB.");
-          }
-
-          const data = await response.json();
-          allMovies.push(...data.results);
-        }
-
-        const topMovies = allMovies.slice(0, 100);
+        const topMovies = await fetchTopMoviesByYear(year);
 
         setMovies(topMovies);
 
@@ -79,7 +43,7 @@ export default function App() {
       }
     }
 
-    fetchMovies();
+    loadMovies();
   }, [year]);
 
   function handleYearChange(event) {
@@ -99,9 +63,14 @@ export default function App() {
       value: value,
     };
 
-    const updatedRatings = ratings.concat(newRating);
-    setRatings(updatedRatings);
+    setRatings(ratings.concat(newRating));
 
+    if (movies.length > 0) {
+      setSelectedMovie(getRandomMovie(movies));
+    }
+  }
+
+  function handleSkipMovie() {
     if (movies.length > 0) {
       setSelectedMovie(getRandomMovie(movies));
     }
@@ -118,16 +87,7 @@ export default function App() {
 
       {!loading && <MovieDisplay movie={selectedMovie} />}
 
-      <div>
-        {ratingOptions.map((rating) => (
-          <RatingButton
-            key={rating.label}
-            label={rating.label}
-            value={rating.value}
-            onRate={handleRating}
-          />
-        ))}
-      </div>
+      <RatingControls onRate={handleRating} onSkip={handleSkipMovie} />
 
       <Statistics ratings={ratings} />
     </div>
