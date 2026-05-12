@@ -1,8 +1,13 @@
 export default function YearSelector({ year, onYearChange }) {
-  const years = [2024, 2023, 2022];
+  const years = [];
+
+  for (let y = 2026; y >= 1926; y--) {
+    years.push(y);
+  }
 
   return (
     <div>
+      <label>
         Select year:
         <select value={year} onChange={onYearChange}>
           {years.map((movieYear) => (
@@ -11,6 +16,7 @@ export default function YearSelector({ year, onYearChange }) {
             </option>
           ))}
         </select>
+      </label>
     </div>
   );
 }
